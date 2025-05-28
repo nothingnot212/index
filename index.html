@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Collaborative Editor</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <style>
+      .editor { width: 90%; height: 300px; margin: 30px auto; border: 1px solid #ccc; padding: 15px; background: #fafaff; font-size: 1.2em;}
+  </style>
+</head>
+<body>
+  <h2 style="text-align:center;">Live Collaborative Editor</h2>
+  <div id="editor" class="editor" contenteditable="true"></div>
+
+  <script>
+    // 1. Paste your Firebase config here
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const docRef = db.ref("documents/shared");
+
+    // 2. Listen for remote changes
+    docRef.on("value", (snapshot) => {
+      const data = snapshot.val();
+      if (data !== document.getElementById("editor").innerHTML) {
+        document.getElementById("editor").innerHTML = data;
+      }
+    });
+
+    // 3. Broadcast local changes
+    let lastValue = "";
+    document.getElementById("editor").addEventListener("input", function() {
+      const value = this.innerHTML;
+      if (value !== lastValue) {
+        lastValue = value;
+        docRef.set(value);
+      }
+    });
+  </script>
+</body>
+</html>
